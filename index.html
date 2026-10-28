@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#172554">
+<title>Mata Pithori Devi Hotel - Waiter App</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--navy:#172554;--blue:#2563eb;--bg:#f4f6fb;--line:#e5e7eb;--muted:#64748b;--green:#15803d;--red:#b91c1c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111827}
+header{background:var(--navy);color:white;padding:18px 16px;position:sticky;top:0;z-index:2;box-shadow:0 2px 8px #0002}
+h1{font-size:21px;margin:0 0 4px}.sub{font-size:12px;opacity:.85}
+main{max-width:760px;margin:auto;padding:14px}
+.tabs{display:flex;gap:8px;margin:0 0 14px}.tab{flex:1;border:1px solid var(--line);background:white;border-radius:12px;padding:12px;font-weight:700;color:var(--navy)}.tab.active{background:var(--blue);color:white;border-color:var(--blue)}
+.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px;box-shadow:0 2px 5px #0f172a08}
+label{display:block;font-size:13px;font-weight:700;margin:0 0 6px}
+input,select,textarea{font:inherit;width:100%;border:1px solid #cbd5e1;border-radius:10px;padding:11px;background:white;color:#111827}
+.row{display:flex;gap:10px;align-items:center}.row>*{flex:1;min-width:0}.muted{color:var(--muted);font-size:13px}.section-title{font-size:16px;font-weight:800;margin:0 0 10px}
+.menu-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #eef2f7}.menu-item:last-child{border-bottom:0}.item-info{flex:1}.item-name{font-weight:700}.price{font-size:13px;color:var(--muted);margin-top:2px}
+.qty{display:flex;align-items:center;gap:8px}.qty button{width:34px;height:34px;border:1px solid #cbd5e1;border-radius:10px;background:white;font-size:20px;font-weight:700}.qty span{min-width:16px;text-align:center;font-weight:800}
+.btn{border:0;border-radius:11px;padding:12px 14px;font:inherit;font-weight:800;background:var(--blue);color:white;cursor:pointer}.btn:disabled{opacity:.45;cursor:not-allowed}.btn.secondary{background:#e2e8f0;color:#172554}.btn.danger{background:#fee2e2;color:var(--red)}.btn.small{padding:8px 10px;font-size:13px}
+.total{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:18px;padding:12px 0}
+.order-card{border:1px solid var(--line);border-radius:13px;padding:12px;margin:10px 0}.order-head{display:flex;justify-content:space-between;gap:8px;align-items:start}.order-head strong{font-size:16px}.order-items{font-size:14px;line-height:1.65;margin:8px 0}.order-actions{display:flex;gap:8px;flex-wrap:wrap}.order-actions button{flex:1}
+.hidden{display:none!important}.notice{background:#eff6ff;color:#1e40af;border-radius:10px;padding:10px;font-size:12px;line-height:1.5}.empty{text-align:center;padding:25px 10px;color:var(--muted)}.search{margin-bottom:10px}.pill{font-size:11px;font-weight:800;border-radius:999px;background:#dcfce7;color:#166534;padding:4px 8px;white-space:nowrap}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:10px 14px 26px}
+@media(min-width:620px){.menu-grid{display:grid;grid-template-columns:1fr 1fr;column-gap:18px}.menu-item{min-width:0}}
+</style>
+</head>
+<body>
+<header><h1 id="hotelTitle">Mata Pithori Devi Hotel</h1><div class="sub">Order save • Bill calculate • Saved history • This phone only</div></header>
+<main>
+<div class="tabs"><button class="tab active" id="newTab">＋ New Order</button><button class="tab" id="historyTab">▤ Saved Orders <span id="countBadge"></span></button></div>
+<section id="newPanel">
+<div class="panel">
+<div class="row"><div><label for="hotelName">Hotel name (optional)</label><input id="hotelName" placeholder="Enter hotel name"></div><div><label for="tableNo">Table / order type</label><select id="tableNo"><option>Table 1</option><option>Table 2</option><option>Table 3</option><option>Table 4</option><option>Table 5</option><option>Table 6</option><option>Table 7</option><option>Table 8</option><option>Table 9</option><option>Table 10</option><option>Parcel</option></select></div></div>
+<div style="margin-top:12px"><label for="notes">Special instructions (optional)</label><input id="notes" placeholder="e.g. less spicy, no onion"></div>
+</div>
+<div class="panel"><div class="section-title">Menu</div><input class="search" id="menuSearch" placeholder="Search menu items…"><div id="menuList" class="menu-grid"></div>
+<div class="notice" style="margin-top:10px">Demo menu and prices are examples. Use “Edit Menu” below to change them to your hotel's actual menu.</div>
+</div>
+<div class="panel"><div class="section-title">Current order</div><div id="cartList" class="muted">No items selected yet.</div><div class="total"><span>Total</span><span id="cartTotal">₹0</span></div><div class="row"><button class="btn" id="saveOrder" disabled>Save Order</button><button class="btn secondary" id="clearCart">Clear</button></div></div>
+<div class="panel"><button class="btn secondary" id="toggleMenuEditor" style="width:100%">⚙ Edit Menu & Prices</button><div id="menuEditor" class="hidden" style="margin-top:12px"><p class="muted">One item per line: Item name,price (example: Veg Soup,90). Saving changes only the menu; existing orders keep their saved prices.</p><textarea id="menuText" rows="8"></textarea><div class="row" style="margin-top:8px"><button class="btn" id="saveMenu">Save Menu</button><button class="btn secondary" id="resetMenu">Restore Demo Menu</button></div></div></div>
+</section>
+<section id="historyPanel" class="hidden"><div class="panel"><div class="row"><div><div class="section-title">Saved order history</div><div class="muted">Saved on this browser and phone.</div></div><button class="btn secondary small" id="exportBtn">Export backup</button></div><input id="historySearch" placeholder="Search table or item…" style="margin-top:12px"><div id="historyList"></div><div style="margin-top:12px"><button class="btn secondary" id="importBtn" style="width:100%">Import backup</button><input type="file" id="importFile" accept=".json,application/json" class="hidden"></div></div><div class="notice">Important: orders are not synced to other phones. Avoid clearing browser data or uninstalling the browser without exporting a backup.</div></section>
+</main>
+<footer>Private local order book • No kitchen sending • No payment processing</footer>
+<script>
+const DEFAULT_MENU=[
+{name:"Veg - Dry Vegetable",price:50},
+{name:"Veg - Gawar Bhaji",price:50},
+{name:"Veg - Sev Bhaji",price:120},
+{name:"Veg - Peas Masala",price:120},
+{name:"Veg - Matar Paneer",price:120},
+{name:"Veg - Gharat Masala (confirm name)",price:150},
+{name:"Veg - Paneer Bhurji",price:150},
+{name:"Veg - Palak Paneer",price:150},
+{name:"Veg - Mixed Kaju Paneer",price:170},
+{name:"Veg - Paneer Masala",price:180},
+{name:"Veg - Paneer Kolhapuri",price:190},
+{name:"Veg - Kaju Kolhapuri",price:190},
+{name:"Veg - Mushroom Masala",price:190},
+{name:"Veg - Paneer Mushroom Masala",price:200},
+{name:"Veg - Cheese Paneer Masala",price:220},
+{name:"Chicken - Chicken Masala",price:150},
+{name:"Chicken - Chicken Sukka",price:170},
+{name:"Chicken - Chicken Fry",price:190},
+{name:"Chicken - Chicken Kolhapuri",price:190},
+{name:"Chicken - Chicken Liver Fry",price:180},
+{name:"Chicken - Chicken Handi Half",price:350},
+{name:"Chicken - Chicken Handi Full",price:650},
+{name:"Chicken - Chicken Handi Sukka Half",price:400},
+{name:"Chicken - Chicken Handi Sukka Full",price:750},
+{name:"Chicken - Green Chicken",price:180},
+{name:"Chicken - Butter Chicken",price:220},
+{name:"Seafood - Mandeli Masala",price:140},
+{name:"Seafood - Bangda Masala",price:150},
+{name:"Seafood - Crab Masala",price:250},
+{name:"Seafood - Prawns Masala",price:250},
+{name:"Seafood - Surmai Masala",price:270},
+{name:"Seafood - Pomfret Masala",price:300},
+{name:"Seafood - Prawns Handi Half",price:700},
+{name:"Seafood - Prawns Handi Full",price:1200},
+{name:"Egg - Boiled Eggs (2 pcs)",price:20},
+{name:"Egg - Boiled Eggs (4 pcs)",price:40},
+{name:"Egg - Egg Fry",price:25},
+{name:"Egg - Omelette",price:60},
+{name:"Egg - Egg Bhurji",price:70},
+{name:"Egg - Cheese Omelette",price:90},
+{name:"Egg - Egg Curry Half",price:60},
+{name:"Egg - Egg Curry Full",price:90},
+{name:"Egg - Cheese Egg Bhurji",price:100},
+{name:"Egg - Egg Masala",price:140},
+{name:"Mutton - Vajdi",price:120},
+{name:"Mutton - Vajdi Sukka",price:140},
+{name:"Mutton - Mutton Masala",price:240},
+{name:"Mutton - Mutton Kheema",price:260},
+{name:"Mutton - Mutton Sukka",price:260},
+{name:"Mutton - Mutton Fry",price:260},
+{name:"Mutton - Green Mutton",price:260},
+{name:"Mutton - Black Mutton",price:260},
+{name:"Mutton - Mutton Handi Half",price:650},
+{name:"Mutton - Mutton Handi Full",price:1200},
+{name:"Mutton - Mutton Handi Fry Half",price:700},
+{name:"Mutton - Mutton Handi Fry Full",price:1300},
+{name:"Mutton - Mutton Paya",price:170},
+{name:"Mutton - Mutton Head (Mundi)",price:170},
+{name:"Thali - Veg Thali",price:100},
+{name:"Thali - Egg Curry Thali",price:160},
+{name:"Thali - Chicken Thali",price:220},
+{name:"Thali - Mutton Thali",price:300},
+{name:"Thali - Vajdi Thali",price:190},
+{name:"Thali - Mandeli Thali",price:190},
+{name:"Thali - Sukat (Jawla) Thali",price:190},
+{name:"Thali - Bangda Thali",price:190},
+{name:"Thali - Bombil Thali",price:240},
+{name:"Thali - Surmai Thali",price:330},
+{name:"Thali - Pomfret Thali",price:350},
+{name:"Thali - Prawns Thali",price:330},
+{name:"Thali - Crab Thali",price:320},
+{name:"Rice & Biryani - Plain Rice",price:80},
+{name:"Rice & Biryani - Jeera Rice",price:120},
+{name:"Rice & Biryani - Egg Rice",price:140},
+{name:"Rice & Biryani - Dal Khichdi",price:150},
+{name:"Rice & Biryani - Dal Khichdi Tadka",price:170},
+{name:"Rice & Biryani - Veg Biryani",price:160},
+{name:"Rice & Biryani - Paneer Biryani",price:200},
+{name:"Rice & Biryani - Egg Biryani",price:160},
+{name:"Rice & Biryani - Chicken Biryani",price:180},
+{name:"Rice & Biryani - Mutton Biryani",price:250},
+{name:"Rice & Biryani - Prawns Biryani",price:280},
+{name:"Rice & Biryani - Surmai Biryani",price:280},
+{name:"Beverages - Buttermilk (Taak)",price:20},
+{name:"Beverages - Lassi",price:45},
+{name:"Beverages - Solkadhi Small",price:20},
+{name:"Beverages - Solkadhi Large",price:30},
+{name:"Beverages - Kokum Sharbat",price:25},
+{name:"Beverages - Cold Drink Small",price:20},
+{name:"Beverages - Cold Drink Large",price:40},
+{name:"Beverages - Mineral Water Small",price:10},
+{name:"Beverages - Mineral Water Large",price:20},
+{name:"Bread - Chapati",price:12},
+{name:"Bread - Bhakri",price:20},
+{name:"Bread - Ghavane",price:25},
+{name:"Bread - Jowar Bhakri",price:25},
+{name:"Fish Fry - Jawla",price:120},
+{name:"Fish Fry - Mandeli Fry",price:120},
+{name:"Fish Fry - Bangda Fry",price:120},
+{name:"Fish Fry - Bombil Fry",price:170},
+{name:"Fish Fry - Surmai Fry",price:250},
+{name:"Fish Fry - Pomfret Fry",price:300},
+{name:"Fish Fry - Prawns Fry",price:250},
+{name:"Fish Fry - Jawla Patties",price:170}
+];
+const MENU_KEY="waiterBookMenu_v1", ORDERS_KEY="waiterBookOrders_v1", HOTEL_KEY="waiterBookHotel_v1";
+let menu=loadJson(MENU_KEY,DEFAULT_MENU), orders=loadJson(ORDERS_KEY,[]), cart={}, editId=null;
+function loadJson(k,fallback){try{const v=localStorage.getItem(k);return v?JSON.parse(v):fallback}catch(e){return fallback}}
+function persistOrders(){localStorage.setItem(ORDERS_KEY,JSON.stringify(orders));renderHistory();updateCount()}
+function money(n){return "₹"+Number(n||0).toLocaleString("en-IN",{maximumFractionDigits:2})}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function showTab(which){const hist=which==="history";document.getElementById("newPanel").classList.toggle("hidden",hist);document.getElementById("historyPanel").classList.toggle("hidden",!hist);document.getElementById("newTab").classList.toggle("active",!hist);document.getElementById("historyTab").classList.toggle("active",hist);if(hist)renderHistory()}
+document.getElementById("newTab").onclick=()=>showTab("new");document.getElementById("historyTab").onclick=()=>showTab("history");
+function renderMenu(){const q=document.getElementById("menuSearch").value.toLowerCase();const list=document.getElementById("menuList");list.innerHTML="";menu.forEach((it,i)=>{if(!it.name.toLowerCase().includes(q))return;const qty=cart[i]||0;const el=document.createElement("div");el.className="menu-item";el.innerHTML=`<div class="item-info"><div class="item-name">${escapeHtml(it.name)}</div><div class="price">${money(it.price)}</div></div><div class="qty"><button aria-label="Decrease ${escapeHtml(it.name)}" data-minus="${i}">−</button><span>${qty}</span><button aria-label="Increase ${escapeHtml(it.name)}" data-plus="${i}">+</button></div>`;list.appendChild(el)});list.querySelectorAll("[data-plus]").forEach(b=>b.onclick=()=>{let i=+b.dataset.plus;cart[i]=(cart[i]||0)+1;renderMenu();renderCart()});list.querySelectorAll("[data-minus]").forEach(b=>b.onclick=()=>{let i=+b.dataset.minus;cart[i]=Math.max(0,(cart[i]||0)-1);renderMenu();renderCart()})}
+function cartItems(){return Object.entries(cart).filter(([i,q])=>q>0).map(([i,q])=>({name:menu[+i].name,price:Number(menu[+i].price),qty:q}))}
+function renderCart(){const items=cartItems(),el=document.getElementById("cartList");el.innerHTML=items.length?items.map(it=>`<div class="row" style="margin:7px 0"><div>${escapeHtml(it.name)} × ${it.qty}</div><strong style="text-align:right">${money(it.price*it.qty)}</strong></div>`).join(""):'<div class="muted">No items selected yet.</div>';document.getElementById("cartTotal").textContent=money(items.reduce((s,it)=>s+it.price*it.qty,0));document.getElementById("saveOrder").disabled=!items.length}
+document.getElementById("menuSearch").oninput=renderMenu;document.getElementById("clearCart").onclick=()=>{if(Object.values(cart).some(Boolean)&&!confirm("Clear current order?"))return;cart={};renderMenu();renderCart()};
+document.getElementById("saveOrder").onclick=()=>{const items=cartItems();if(!items.length)return;const now=new Date().toISOString();if(editId){const idx=orders.findIndex(o=>o.id===editId);if(idx>=0)orders[idx]={...orders[idx],table:document.getElementById("tableNo").value,notes:document.getElementById("notes").value.trim(),items,total:items.reduce((s,it)=>s+it.price*it.qty,0),updated:now};editId=null;document.getElementById("saveOrder").textContent="Save Order";}else{orders.unshift({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),table:document.getElementById("tableNo").value,notes:document.getElementById("notes").value.trim(),items,total:items.reduce((s,it)=>s+it.price*it.qty,0),created:now,status:"Active"});}persistOrders();cart={};document.getElementById("notes").value="";renderMenu();renderCart();alert("Order saved on this phone.");showTab("history")};
+function dateLabel(iso){try{return new Date(iso).toLocaleString("en-IN",{dateStyle:"medium",timeStyle:"short"})}catch(e){return ""}}
+function renderHistory(){const q=(document.getElementById("historySearch").value||"").toLowerCase();const el=document.getElementById("historyList");const filtered=orders.filter(o=>(o.table+" "+o.notes+" "+o.items.map(i=>i.name).join(" ")).toLowerCase().includes(q));if(!filtered.length){el.innerHTML='<div class="empty">No saved orders found.</div>';return}el.innerHTML=filtered.map(o=>`<div class="order-card"><div class="order-head"><div><strong>${escapeHtml(o.table)}</strong><div class="muted">${dateLabel(o.updated||o.created)}</div></div><span class="pill">${escapeHtml(o.status||"Active")}</span></div>${o.notes?`<div class="muted" style="margin-top:6px">Note: ${escapeHtml(o.notes)}</div>`:""}<div class="order-items">${o.items.map(i=>`${escapeHtml(i.name)} × ${i.qty} — ${money(i.price*i.qty)}`).join("<br>")}</div><div class="total" style="font-size:16px"><span>Total</span><span>${money(o.total)}</span></div><div class="order-actions"><button class="btn secondary small" data-edit="${o.id}">Edit order</button><button class="btn secondary small" data-done="${o.id}">${o.status==="Completed"?"Mark active":"Complete"}</button><button class="btn danger small" data-delete="${o.id}">Delete</button></div></div>`).join("");el.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editOrder(b.dataset.edit));el.querySelectorAll("[data-done]").forEach(b=>b.onclick=()=>{let o=orders.find(x=>x.id===b.dataset.done);if(o){o.status=o.status==="Completed"?"Active":"Completed";persistOrders()}});el.querySelectorAll("[data-delete]").forEach(b=>b.onclick=()=>{if(confirm("Delete this saved order?")){orders=orders.filter(x=>x.id!==b.dataset.delete);persistOrders()}})}
+function editOrder(id){const o=orders.find(x=>x.id===id);if(!o)return;editId=id;cart={};o.items.forEach(it=>{const i=menu.findIndex(m=>m.name===it.name);if(i>=0)cart[i]=(cart[i]||0)+it.qty;else{menu.push({name:it.name,price:it.price});cart[menu.length-1]=it.qty}});document.getElementById("tableNo").value=o.table;document.getElementById("notes").value=o.notes||"";document.getElementById("saveOrder").textContent="Update Order";renderMenu();renderCart();showTab("new");window.scrollTo({top:0,behavior:"smooth"})}
+document.getElementById("historySearch").oninput=renderHistory;
+document.getElementById("toggleMenuEditor").onclick=()=>{const e=document.getElementById("menuEditor");e.classList.toggle("hidden");document.getElementById("menuText").value=menu.map(i=>`${i.name},${i.price}`).join("\n")};
+document.getElementById("saveMenu").onclick=()=>{const lines=document.getElementById("menuText").value.split(/\n/).map(x=>x.trim()).filter(Boolean);const next=[];for(const line of lines){const p=line.lastIndexOf(",");if(p<1||!Number.isFinite(Number(line.slice(p+1).trim()))||Number(line.slice(p+1).trim())<0){alert("Use one item per line in this format: Item name,price");return}next.push({name:line.slice(0,p).trim(),price:Number(line.slice(p+1).trim())})}if(!next.length){alert("Add at least one menu item.");return}menu=next;localStorage.setItem(MENU_KEY,JSON.stringify(menu));cart={};renderMenu();renderCart();alert("Menu saved.")};
+document.getElementById("resetMenu").onclick=()=>{if(confirm("Restore demo menu?")){menu=DEFAULT_MENU.map(x=>({...x}));localStorage.setItem(MENU_KEY,JSON.stringify(menu));cart={};document.getElementById("menuText").value=menu.map(i=>`${i.name},${i.price}`).join("\n");renderMenu();renderCart()}};
+document.getElementById("exportBtn").onclick=()=>{const blob=new Blob([JSON.stringify({version:1,exportedAt:new Date().toISOString(),menu,orders,hotel:document.getElementById("hotelName").value},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="waiter-order-backup.json";a.click();URL.revokeObjectURL(a.href)};
+document.getElementById("importBtn").onclick=()=>document.getElementById("importFile").click();
+document.getElementById("importFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!Array.isArray(d.orders)||!Array.isArray(d.menu))throw Error();if(!confirm("Import backup and replace current menu and orders?"))return;menu=d.menu;orders=d.orders;localStorage.setItem(MENU_KEY,JSON.stringify(menu));persistOrders();renderMenu();renderCart();if(d.hotel)document.getElementById("hotelName").value=d.hotel;alert("Backup imported.")}catch(err){alert("Invalid backup file.")}e.target.value=""};
+const hotelSaved=localStorage.getItem(HOTEL_KEY)||"Mata Pithori Devi Hotel";document.getElementById("hotelName").value=hotelSaved;function updateHotel(){const v=document.getElementById("hotelName").value.trim();localStorage.setItem(HOTEL_KEY,v);document.getElementById("hotelTitle").textContent=v||"Hotel Waiter Order Book"}document.getElementById("hotelName").onchange=updateHotel;document.getElementById("hotelName").oninput=()=>document.getElementById("hotelTitle").textContent=document.getElementById("hotelName").value.trim()||"Hotel Waiter Order Book";
+function updateCount(){document.getElementById("countBadge").textContent=orders.length?`(${orders.length})`:""}renderMenu();renderCart();renderHistory();updateCount();updateHotel();
+if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{})); }
+</script>
+</body>
+</html>
